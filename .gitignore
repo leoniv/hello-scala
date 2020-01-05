@@ -1,3 +1,6 @@
 target/
 .metals/
 .idea/
+.bloop/
+.scalafmt.conf
+project/
