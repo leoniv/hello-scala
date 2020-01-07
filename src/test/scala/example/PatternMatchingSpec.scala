@@ -4,7 +4,7 @@ import org.scalatest._
 import example.PatternMatching._
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
-class PatternMatchingSpec extends FlatSpec with Matchers {
+class PatternMatchingSpec extends FunSuite with DiagrammedAssertions {
   val pets = Table(
     ("name", "says", "expectKind"),
     ("Any", "meow", "cat"),
@@ -14,6 +14,8 @@ class PatternMatchingSpec extends FlatSpec with Matchers {
     ("Any", "Any", "unknown"),
   )
   forAll(pets) { (name, says, expectKind) =>
-    kind(Pet(name, says)) should equal(expectKind)
+    test(s"The ${Pet(name, says)} should be a $expectKind") {
+      assert(kind(Pet(name, says)) == expectKind)
+    }
   }
 }
