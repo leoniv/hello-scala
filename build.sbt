@@ -8,7 +8,14 @@ ThisBuild / organizationName := "example"
 lazy val root = (project in file("."))
   .settings(
     name := "stepik.scala",
-    libraryDependencies += scalaTest % Test
+    libraryDependencies ++= Seq(
+      scalaTest % Test,
+      "com.lihaoyi" % "ammonite" % "2.0.1" cross CrossVersion.full
+    ),
+    sourceGenerators in Test += Def.task {
+      val file = (sourceManaged in Test) .value / "amm.scala"
+      IO.write(file, """object amm extends App { ammonite.Main.main(args) }""")
+      Seq(file)
+    }.taskValue
   )
 
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
