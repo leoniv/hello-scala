@@ -3,5 +3,4 @@ target/
 .idea/
 .bloop/
 .scalafmt.conf
-project/
 tmp/
