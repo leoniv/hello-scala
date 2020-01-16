@@ -4,3 +4,4 @@ target/
 .bloop/
 .scalafmt.conf
 tmp/
+metals.sbt
