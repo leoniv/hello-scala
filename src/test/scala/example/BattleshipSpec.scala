@@ -20,50 +20,62 @@ class BattleshipSpec extends FunSpec with Matchers {
     "BlackPearl" -> ship(1 -> 6, 1 -> 7, 1 -> 8)
   )
 
+  describe("#readInput") {
+    it("Считывает из строки позиции кораблей возвращает флот") {
+      pending
+    }
+  }
+
   describe("#validateShip") {
-//    val ships = Table(
-//      ("ship", "isValid"),
-//      (ship(), false),
-//      (knownShips("MillenniumFalcon"), true)
-//    )
-//    forAll(ships) { (ship, isValid) =>
-//      it(s"Ship $ship should ${if (isValid) "" else "not "}be valid") {
-//        validateShip(ship) should be (isValid)
-//      }
-//    }
 
-    describe("Длина корабля не может быть более ${SHIP_MAX_LENGTH}х клеток") {
+    describe(s"Длина корабля не может быть более ${SHIP_MAX_LENGTH}х клеток") {
       describe("По горизонтали") {
-        val ships = for (x <- 1 to SHIP_MAX_LENGTH + 2) yield
-          (shipX(0, x), x <= SHIP_MAX_LENGTH)
 
-        forAll(Table(("ship", "isValid"), ships: _*)) { (ship, isValid) =>
-          it(s"$ship ${if (!isValid) "не " else ""}валидный корабль") {
-            validateShip(ship) should be (isValid)
-          }
+        it("Валидный корабль") {
+          validateShip(shipX(1, SHIP_MAX_LENGTH)) should be (true)
+        }
+
+        it("Не валидный корабль") {
+          validateShip(shipX(1, SHIP_MAX_LENGTH + 1)) should be (false)
         }
       }
 
       describe("По вертикали") {
-        val ships = for (y <- 1 to SHIP_MAX_LENGTH + 2) yield
-          (shipY(0, y), y <= SHIP_MAX_LENGTH)
 
-        forAll(Table(("ship", "isValid"), ships: _*)) { (ship, isValid) =>
-          it(s"$ship ${if (!isValid) "не " else ""}валидный корабль") {
-            validateShip(ship) should be (isValid)
-          }
+        it("Валидный корабль") {
+          validateShip(shipY(1, SHIP_MAX_LENGTH)) should be (true)
+        }
+
+        it("Не валидный корабль") {
+          validateShip(shipY(1, SHIP_MAX_LENGTH + 1)) should be (false)
         }
       }
     }
 
     describe("Ширина корабля не более одной клетки") {
       describe("По горизотали") {
-        it("Валидный корабль") { pending }
-        it("Не валидный корабль") { pending }
+
+        it("Валидный корабль") {
+          validateShip(ship(0 -> 1, 0 -> 2, 0 -> 3)) should be (true)
+        }
+
+        it("Не валидный корабль") {
+          validateShip(ship(0 -> 1, 0 -> 2, 1 -> 2)) should be (false)
+        }
       }
       describe("Или по вертикали") {
-        it("Валидный корабль") { pending }
-        it("Не валидный корабль") { pending }
+
+        it("Валидный корабль") {
+          validateShip(ship(1 -> 0, 2 -> 0, 3 -> 0)) should be (true)
+        }
+
+        it("Не валидный корабль") {
+          validateShip(ship(1 -> 0, 2 -> 0, 2 -> 1)) should be (false)
+        }
+      }
+
+      it("Корабль размером в одну клетку валидный") {
+        validateShip(ship(0->0)) should be (true)
       }
     }
 
