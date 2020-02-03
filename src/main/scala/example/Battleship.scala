@@ -56,7 +56,10 @@ object Battleship {
   }
 
   def validatePosition(ship: Ship, field: Field): Boolean = ???
-  def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = ???
+  def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = {
+    if (validateShip(ship)) (fleet + (name -> ship))
+    else fleet
+  }
   def markUsedCells(field: Field, ship: Ship): Field = ???
   def tryAddShip(game: Game, name: String, ship: Ship): Game = ???
 }

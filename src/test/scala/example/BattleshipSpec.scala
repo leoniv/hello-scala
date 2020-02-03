@@ -100,6 +100,14 @@ class BattleshipSpec extends FunSpec with Matchers {
   }
 
   describe("#enrichFleet") {
-    it("Добавляет корабль во флот") { pending }
+    it("Добавляет валидный корабль во флот") {
+      enrichFleet(Map().empty, "Name", ship(0 -> 1)) should
+        contain (("Name" -> ship(0 -> 1)))
+    }
+
+    it("Не валидный корабль не добавляет") {
+      enrichFleet(Map[String, Ship]().empty, "Не важно", ship()) should
+        be (empty)
+    }
   }
 }
