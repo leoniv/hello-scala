@@ -4,6 +4,7 @@ import scala.annotation.tailrec
 
 object Battleship {
   val SHIP_MAX_LENGTH = 4
+  val FIELD_SIZE = 10
   type Point = (Int, Int)
   type Ship = List[Point]
   type Fleet = Map[String, Ship]
@@ -37,7 +38,11 @@ object Battleship {
     def validate: Boolean =
       validateProjection(xProjection) &&
       validateProjection(yProjection) &&
-      SHIP_MAX_LENGTH + 1 >= xWidth + yWidth
+      SHIP_MAX_LENGTH + 1 >= xWidth + yWidth &&
+      xProjection.sorted.last < FIELD_SIZE &&
+      yProjection.sorted.last < FIELD_SIZE &&
+      xProjection.sorted.head > -1 &&
+      yProjection.sorted.head > -1
   }
   object ShipLine {
     class ShipWrapper(val get: Ship) extends ShipLine
@@ -61,7 +66,9 @@ object Battleship {
     for {
       (shipCount, xs) <- readInputHead(in)
       ships <- readShips(xs, shipCount)
-    } yield ships.toMap
+    } yield ships.foldLeft(Map[String, Ship]().empty)(
+      (fleet, ship) => enrichFleet(fleet, ship._1, ship._2)
+    )
   }
 
   def readShips(in: Input, count: Int): Option[List[(ShipName, Ship)]] = {
@@ -82,7 +89,7 @@ object Battleship {
   def readShip(in: Input): Option[ReadedInput[(ShipName, Ship)]] = for {
     ((name, pointsCount), xs) <- readShipHeader(in)
     (points, xs) <- readPoints(xs, pointsCount)
-  } yield ((name, points), xs)
+  } yield ((name, points.sorted), xs)
 
   val readPairOfInt: (String) => Option[(Int, Int)] = s => {
     val regex = """(\d+)\s+(\d+)""".r
@@ -133,7 +140,16 @@ object Battleship {
     else fleet
   }
 
-  def markUsedCells(field: Field, ship: Ship): Field = ???
+  def markUsedCells(field: Field, ship: Ship): Field = {
+    ship.foldLeft(field)(setPoint _)
+  }
+
+  def setPoint(field: Field, point: Point): Field = {
+    val (x, y) = point
+    val (headL :+ line, tailL) = field.splitAt(x + 1)
+    val (head :+ _, tail) = line.splitAt(y + 1)
+    (headL :+ (head :+ true) ++ tail) ++ tailL
+  }
 
   def tryAddShip(game: Game, name: String, ship: Ship): Game = ???
 }

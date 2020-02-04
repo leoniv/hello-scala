@@ -13,6 +13,12 @@ class BattleshipSpec extends FunSpec with Matchers {
   def shipY(fY: Int, toY: Int, x: Int = 0) = ship(
     (fY to toY).map(y => (x, y)): _*
   )
+  def field(size: Int): Field = Vector.fill(size)(
+    Vector.fill(size)(false)
+  )
+
+  val T = true
+  val F = false
 
   val TEST_INPUT_1 = """3
       |BlackPearl 3
@@ -134,11 +140,33 @@ class BattleshipSpec extends FunSpec with Matchers {
         validateShip(ship(1 -> 1, 1 -> 3, 1 -> 4)) should be (false)
       }
     }
+
+    describe("Корабль должен помещаться на поле") {
+      describe("По горизонтали") {
+        it("Не валидный корабль начинается за пределами поля") {
+          validateShip(shipX(-1, 1)) should be (false)
+        }
+
+        it("Не валидный корабль заканчивается за пределами поля") {
+          validateShip(shipX(FIELD_SIZE - 1, 2)) should be (false)
+        }
+      }
+
+      describe("По вертикали") {
+        it("Не валидный корабль начинается за пределами поля") {
+          validateShip(shipY(-1, 1)) should be (false)
+        }
+
+        it("Не валидный корабль заканчивается за пределами поля") {
+          validateShip(shipY(FIELD_SIZE - 1, 2)) should be (false)
+        }
+      }
+    }
   }
 
   describe("#validatePosition") {
     describe("Корабли не могут касаться дугруга") {
-      it ("Ни ботрами") { pending }
+      it ("Ни бортами") { pending }
       it ("Ни углами") { pending }
       it ("Тем более пересекаться") { pending }
     }
@@ -155,6 +183,48 @@ class BattleshipSpec extends FunSpec with Matchers {
     it("Не валидный корабль не добавляет") {
       enrichFleet(Map[String, Ship]().empty, "Не важно", ship()) should
         be (empty)
+    }
+  }
+
+  describe("#markUsedCells") {
+    it("Помечает клетки занимаемые кораблем") {
+      val givenShip = ship(1->1, 1->2, 1->3, 2 -> 3, 3 -> 3)
+      val expectedField = Vector(
+        Vector.fill(5)(F),
+        Vector.fill(5)(F, T, T, T, F),
+        Vector.fill(5)(F, F, F, T, F),
+        Vector.fill(5)(F, F, F, T, F),
+        Vector.fill(5)(F)
+      )
+
+      markUsedCells(field(5), givenShip) should equal (expectedField)
+    }
+
+    describe("#setPoint") {
+      it("Когда точка находится в поле") {
+        setPoint(field(3), (1, 1)) should equal (
+          Vector(
+            Vector(F, F, F),
+            Vector(F, T, F),
+            Vector(F, F, F)
+          )
+        )
+      }
+
+      describe("Когда точка находится вне поля") {
+        it("Левее") {
+          setPoint(field(3), (1, -1)) should equal (field(3))
+        }
+        it("Правее") {
+          setPoint(field(3), (1, 3)) should equal (field(3))
+        }
+        it("Выше") {
+          setPoint(field(3), (-1, 1)) should equal (field(3))
+        }
+        it("Ниже") {
+          setPoint(field(3), (3, 1)) should equal (field(3))
+        }
+      }
     }
   }
 }
