@@ -14,15 +14,29 @@ class BattleshipSpec extends FunSpec with Matchers {
     (fY to toY).map(y => (x, y)): _*
   )
 
-  def knownShips = Map(
+  val TEST_INPUT_1 = """3
+      |BlackPearl 3
+      |1 6
+      |1 7
+      |1 8
+      |MillenniumFalcon 4
+      |2 5
+      |3 5
+      |4 5
+      |5 5
+      |Varyag 1
+      |9 9""".stripMargin
+
+  def KNOWN_SHIPS = Map(
+    "BlackPearl" -> ship(1 -> 6, 1 -> 7, 1 -> 8),
     "MillenniumFalcon" -> ship(2 -> 5, 3 -> 5, 4 -> 5, 5 -> 5),
-    "Varyag" -> ship(9 -> 9),
-    "BlackPearl" -> ship(1 -> 6, 1 -> 7, 1 -> 8)
+    "Varyag" -> ship(9 -> 9)
   )
 
   describe("#readInput") {
     it("Считывает из строки позиции кораблей возвращает флот") {
-      pending
+      readInput(TEST_INPUT_1.split("\\n").toList) should
+        equal (Some(KNOWN_SHIPS))
     }
 
     describe("#readInputHead") {
@@ -54,7 +68,7 @@ class BattleshipSpec extends FunSpec with Matchers {
       }
 
       it("При неудаче чтения возвращает None") {
-        pending
+        readShip(List("S 3", "0 A", "0 2", "0 3", "tail")) should be (None)
       }
     }
   }

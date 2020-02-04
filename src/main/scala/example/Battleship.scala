@@ -1,5 +1,7 @@
 package example
 
+import scala.annotation.tailrec
+
 object Battleship {
   val SHIP_MAX_LENGTH = 4
   type Point = (Int, Int)
@@ -15,10 +17,60 @@ object Battleship {
   type ShipName = String
   type ShipHeader = (ShipName, Points)
 
+  trait ShipLine {
+    val get: Ship
+    def xProjection = get.unzip match { case (x, y) => x }
+    def yProjection = get.unzip match { case (x, y) => y }
+    def xWidth = xProjection.distinct.length
+    def yWidth = yProjection.distinct.length
+    def validateProjection(projection: List[Int]): Boolean = {
+      def isMonotonic(xs: List[Int]): Boolean = {
+        xs.size == xs.distinct.size && xs.last - xs.head == xs.size - 1
+      }
+      def isConst(xs: List[Int]): Boolean = {
+        xs.distinct.size == 1
+      }
+      if (projection.isEmpty) false
+      else isConst(projection) || isMonotonic(projection.sorted)
+    }
+
+    def validate: Boolean =
+      validateProjection(xProjection) &&
+      validateProjection(yProjection) &&
+      SHIP_MAX_LENGTH + 1 >= xWidth + yWidth
+  }
+  object ShipLine {
+    class ShipWrapper(val get: Ship) extends ShipLine
+
+    def apply(ship: Ship): ShipLine = {
+      val shipw = new ShipWrapper(ship)
+      if (shipw.xWidth == 1) ShipLineY(ship)
+      else if (shipw.yWidth == 1) ShipLineX(ship)
+      else ShipLineXY(ship)
+    }
+  }
+  case class ShipLineX(get: Ship) extends ShipLine
+  case class ShipLineY(get: Ship) extends ShipLine
+  case class ShipLineXY(get: Ship) extends ShipLine {
+    override def validate: Boolean = ???
+  }
 
   def pop[T](in: List[T]) = Some(in).collect{ case (x :: xs) => (x, xs) }
 
-  def readInput(in: Input): Option[Fleet] =  ???
+  def readInput(in: Input): Option[Fleet] = {
+    for {
+      (shipCount, xs) <- readInputHead(in)
+      ships <- readShips(xs, shipCount)
+    } yield ships.toMap
+  }
+
+  def readShips(in: Input, count: Int): Option[List[(ShipName, Ship)]] = {
+    if (count == 0) Some(List().empty)
+    else for {
+      (sh, xs) <- readShip(in)
+      list <- readShips(xs, count - 1)
+    } yield sh +: list
+  }
 
   def readInputHead(in: Input): Option[ReadedInput[InputHeader]] = {
     for {
@@ -66,45 +118,6 @@ object Battleship {
     } yield (name, points) -> xs
   }
 
-  trait ShipLine {
-    val get: Ship
-    def xProjection = get.unzip match { case (x, y) => x }
-    def yProjection = get.unzip match { case (x, y) => y }
-    def xWidth = xProjection.distinct.length
-    def yWidth = yProjection.distinct.length
-    def validateProjection(projection: List[Int]): Boolean = {
-      def isMonotonic(xs: List[Int]): Boolean = {
-        xs.size == xs.distinct.size && xs.last - xs.head == xs.size - 1
-      }
-      def isConst(xs: List[Int]): Boolean = {
-        xs.distinct.size == 1
-      }
-      if (projection.isEmpty) false
-      else isConst(projection) || isMonotonic(projection.sorted)
-    }
-
-    def validate: Boolean =
-      validateProjection(xProjection) &&
-      validateProjection(yProjection) &&
-      SHIP_MAX_LENGTH + 1 >= xWidth + yWidth
-  }
-
-  object ShipLine {
-    class ShipWrapper(val get: Ship) extends ShipLine
-
-    def apply(ship: Ship): ShipLine = {
-      val shipw = new ShipWrapper(ship)
-      if (shipw.xWidth == 1) ShipLineY(ship)
-      else if (shipw.yWidth == 1) ShipLineX(ship)
-      else ShipLineXY(ship)
-    }
-  }
-  case class ShipLineX(get: Ship) extends ShipLine
-  case class ShipLineY(get: Ship) extends ShipLine
-  case class ShipLineXY(get: Ship) extends ShipLine {
-    override def validate: Boolean = ???
-  }
-
   def validateShip(ship: Ship): Boolean = {
     val shipl = ShipLine(ship)
     shipl match {
@@ -114,10 +127,13 @@ object Battleship {
   }
 
   def validatePosition(ship: Ship, field: Field): Boolean = ???
+
   def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = {
     if (validateShip(ship)) (fleet + (name -> ship))
     else fleet
   }
+
   def markUsedCells(field: Field, ship: Ship): Field = ???
+
   def tryAddShip(game: Game, name: String, ship: Ship): Game = ???
 }
