@@ -7,6 +7,64 @@ object Battleship {
   type Fleet = Map[String, Ship]
   type Field = Vector[Vector[Boolean]]
   type Game = (Field, Fleet)
+  type Input = List[String]
+  type ReadedInput[T] = (T, Input)
+  type ShipsCount = Int
+  type InputHeader = ShipsCount
+  type Points = Int
+  type ShipName = String
+  type ShipHeader = (ShipName, Points)
+
+
+  def pop[T](in: List[T]) = Some(in).collect{ case (x :: xs) => (x, xs) }
+
+  def readInput(in: Input): Option[Fleet] =  ???
+
+  def readInputHead(in: Input): Option[ReadedInput[InputHeader]] = {
+    for {
+      (x, xs) <- pop(in)
+      count <- x.toIntOption
+    } yield (count, xs)
+  }
+
+  def readShip(in: Input): Option[ReadedInput[(ShipName, Ship)]] = for {
+    ((name, pointsCount), xs) <- readShipHeader(in)
+    (points, xs) <- readPoints(xs, pointsCount)
+  } yield ((name, points), xs)
+
+  val readPairOfInt: (String) => Option[(Int, Int)] = s => {
+    val regex = """(\d+)\s+(\d+)""".r
+    for {
+      regex(w1, w2) <- Some(s)
+      x <- w1.toIntOption
+      y <- w2.toIntOption
+    } yield (x, y)
+  }
+
+  def sequence[T](xs: List[Option[T]]): Option[List[T]] = {
+    xs.foldRight(Option(List[T]().empty))( (o, os) =>
+      for {
+        x <- o
+        xs <- os
+      } yield x +: xs
+    )
+  }
+
+  def readPoints(in: Input, count: Int): Option[ReadedInput[List[Point]]] = {
+    val (ps, xs) = in.splitAt(count)
+    for {
+      points <- sequence(ps.map(readPairOfInt))
+    } yield (points, xs)
+  }
+
+  def readShipHeader(in: Input): Option[ReadedInput[ShipHeader]] = {
+    val regex = """^(.+)\s(\d+)""".r
+    for {
+      (header, xs)   <- pop(in)
+      regex(name, number) <- Some(header)
+      points <- number.toIntOption
+    } yield (name, points) -> xs
+  }
 
   trait ShipLine {
     val get: Ship

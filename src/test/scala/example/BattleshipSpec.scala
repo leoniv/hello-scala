@@ -24,6 +24,39 @@ class BattleshipSpec extends FunSpec with Matchers {
     it("Считывает из строки позиции кораблей возвращает флот") {
       pending
     }
+
+    describe("#readInputHead") {
+      it("Возвращает опционльно ReadedInput[InputHeader]") {
+        readInputHead(List("42","tail")) should
+          equal (Some(42 -> List("tail")))
+      }
+
+      it("При неудаче чтения возвращает None") {
+        readInputHead(List("NaN","tail")) should be (None)
+      }
+    }
+
+    describe("#readShipHeader") {
+      it("Возвращает опционльно ReadedInput[ShipHeader]") {
+        readShipHeader(List("Ship name 42", "tail")) should
+          equal (Some(("Ship name" -> 42) -> List("tail")))
+      }
+
+      it("При неудаче чтения возвращает None") {
+        readShipHeader(List("Ship name", "NaN", "tail")) should be (None)
+      }
+    }
+
+    describe("#readShip") {
+      it("Возвращает опционльно ReadedInput[(Shiname, Ship)]") {
+        readShip(List("S 3", "0 1", "0 2", "0 3", "tail")) should
+          equal (Some((("S", ship(0 -> 1, 0 -> 2, 0 -> 3)), List("tail"))))
+      }
+
+      it("При неудаче чтения возвращает None") {
+        pending
+      }
+    }
   }
 
   describe("#validateShip") {
