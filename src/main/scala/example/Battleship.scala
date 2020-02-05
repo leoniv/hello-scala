@@ -60,6 +60,23 @@ object Battleship {
     override def validate: Boolean = ???
   }
 
+  implicit class IntExtension(val get: Int) {
+    def in(range: (Int, Int)): Boolean = {
+      val (x, y) = range
+      get >= x && get <= y
+    }
+
+    def in(coll: Seq[_]): Boolean = {
+      in(0 -> (coll.size - 1))
+    }
+
+    def split[T](v: Vector[T]): Option[(Vector[T], Vector[T])] =
+      Some(get).collect{ case x if (x in v) => v.splitAt(get + 1) }
+
+    def select[T](v: Vector[T]): Option[T] =
+      Some(get).collect{ case x if (x in v) => v(x) }
+  }
+
   def pop[T](in: List[T]) = Some(in).collect{ case (x :: xs) => (x, xs) }
 
   def readInput(in: Input): Option[Fleet] = {
@@ -133,7 +150,20 @@ object Battleship {
     }
   }
 
-  def validatePosition(ship: Ship, field: Field): Boolean = ???
+  def getCell(field: Field, point: Point): Option[Boolean] = {
+    val (x, y) = point
+    for {
+      line <- x select field
+      cell <- y select line
+    } yield cell
+  }
+
+  def validatePosition(ship: Ship, field: Field): Boolean = {
+    sequence(ship.map(point => getCell(field, point))) match {
+      case None => false
+      case Some(cels) => !cels.foldLeft(false)((acc, x) => acc || x)
+    }
+  }
 
   def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = {
     if (validateShip(ship)) (fleet + (name -> ship))
@@ -146,10 +176,18 @@ object Battleship {
 
   def setPoint(field: Field, point: Point): Field = {
     val (x, y) = point
-    val (headL :+ line, tailL) = field.splitAt(x + 1)
-    val (head :+ _, tail) = line.splitAt(y + 1)
-    (headL :+ (head :+ true) ++ tail) ++ tailL
+    (for {
+      (headL :+ line, tailL) <- x split field
+      (head :+ _, tail) <- y split line
+    } yield (headL :+ (head :+ true) ++ tail) ++ tailL) match {
+      case None => field
+      case Some(f) => f
+    }
   }
 
   def tryAddShip(game: Game, name: String, ship: Ship): Game = ???
+
+  def makeGame(input: Input): Game = {
+    ???
+  }
 }

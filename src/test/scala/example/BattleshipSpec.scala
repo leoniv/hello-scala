@@ -4,7 +4,7 @@ import org.scalatest._
 import example.Battleship._
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
-class BattleshipSpec extends FunSpec with Matchers {
+class BattleshipSpec extends FunSpec with Matchers with DiagrammedAssertions {
   //Helper
   def ship(points: Point*): Ship = points.toList
   def shipX(fX: Int, toX: Int, y: Int = 0) = ship(
@@ -18,6 +18,7 @@ class BattleshipSpec extends FunSpec with Matchers {
   )
 
   val T = true
+  val t = T
   val F = false
 
   val TEST_INPUT_1 = """3
@@ -33,11 +34,37 @@ class BattleshipSpec extends FunSpec with Matchers {
       |Varyag 1
       |9 9""".stripMargin
 
+  val EXPECTED_GAME_1 = (
+    Vector(
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,t,F,F,F,F),
+      Vector(F,F,F,F,F,t,F,F,F,F),
+      Vector(F,F,F,F,F,t,F,F,F,F),
+      Vector(F,F,F,F,F,t,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,t),
+    ),
+    Map(
+    "MillenniumFalcon" -> ship(2 -> 5, 3 -> 5, 4 -> 5, 5 -> 5),
+    "Varyag" -> ship(9 -> 9)
+    )
+  )
+
   def KNOWN_SHIPS = Map(
     "BlackPearl" -> ship(1 -> 6, 1 -> 7, 1 -> 8),
     "MillenniumFalcon" -> ship(2 -> 5, 3 -> 5, 4 -> 5, 5 -> 5),
     "Varyag" -> ship(9 -> 9)
   )
+
+  describe("#makeGame") {
+    it("Принимает Input, Расставляет корабли возвращает Game") {
+       makeGame(TEST_INPUT_1.split("\\n").toList) should
+         equal (EXPECTED_GAME_1)
+    }
+  }
 
   describe("#readInput") {
     it("Считывает из строки позиции кораблей возвращает флот") {
@@ -165,13 +192,31 @@ class BattleshipSpec extends FunSpec with Matchers {
   }
 
   describe("#validatePosition") {
+    val field = Vector(
+      Vector(F, F, F),
+      Vector(F, F, F),
+      Vector(t, F, F),
+    )
     describe("Корабли не могут касаться дугруга") {
-      it ("Ни бортами") { pending }
-      it ("Ни углами") { pending }
-      it ("Тем более пересекаться") { pending }
+      it ("Ни бортами") {
+        assert(validatePosition(ship(1 -> 0), field) == false)
+        assert(validatePosition(ship(2 -> 1), field) == false)
+      }
+      it ("Ни углами") {
+        assert(validatePosition(ship(1 -> 1), field) == false)
+      }
+      it ("Тем более пересекаться") {
+        assert(validatePosition(ship(1 -> 0), field) == false)
+      }
     }
 
-    it("Валидная позиция корабля") { pending }
+    it("Валидная позиция корабля") {
+      assert(validatePosition(ship(0 -> 0), field) == true)
+      assert(validatePosition(ship(0 -> 1), field) == true)
+      assert(validatePosition(ship(0 -> 2), field) == true)
+      assert(validatePosition(ship(1 -> 2), field) == true)
+      assert(validatePosition(ship(2 -> 2), field) == true)
+    }
   }
 
   describe("#enrichFleet") {
@@ -188,16 +233,14 @@ class BattleshipSpec extends FunSpec with Matchers {
 
   describe("#markUsedCells") {
     it("Помечает клетки занимаемые кораблем") {
-      val givenShip = ship(1->1, 1->2, 1->3, 2 -> 3, 3 -> 3)
+      val givenShip = ship(0->0, 0->1, 0->2, 1 -> 2, 2 -> 2)
       val expectedField = Vector(
-        Vector.fill(5)(F),
-        Vector.fill(5)(F, T, T, T, F),
-        Vector.fill(5)(F, F, F, T, F),
-        Vector.fill(5)(F, F, F, T, F),
-        Vector.fill(5)(F)
+        Vector(t, t, t),
+        Vector(F, F, t),
+        Vector(F, F, t),
       )
 
-      markUsedCells(field(5), givenShip) should equal (expectedField)
+      assert(markUsedCells(field(3), givenShip) == expectedField)
     }
 
     describe("#setPoint") {
