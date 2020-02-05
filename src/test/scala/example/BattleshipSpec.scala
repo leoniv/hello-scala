@@ -37,18 +37,18 @@ class BattleshipSpec extends FunSpec with Matchers with DiagrammedAssertions {
   val EXPECTED_GAME_1 = (
     Vector(
       Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,t,t,t,F),
       Vector(F,F,F,F,F,F,F,F,F,F),
-      Vector(F,F,F,F,F,t,F,F,F,F),
-      Vector(F,F,F,F,F,t,F,F,F,F),
-      Vector(F,F,F,F,F,t,F,F,F,F),
-      Vector(F,F,F,F,F,t,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
+      Vector(F,F,F,F,F,F,F,F,F,F),
       Vector(F,F,F,F,F,F,F,F,F,F),
       Vector(F,F,F,F,F,F,F,F,F,F),
       Vector(F,F,F,F,F,F,F,F,F,F),
       Vector(F,F,F,F,F,F,F,F,F,t),
     ),
     Map(
-    "MillenniumFalcon" -> ship(2 -> 5, 3 -> 5, 4 -> 5, 5 -> 5),
+    "BlackPearl" -> ship(1 -> 6, 1 -> 7, 1 -> 8),
     "Varyag" -> ship(9 -> 9)
     )
   )
@@ -61,8 +61,8 @@ class BattleshipSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
   describe("#makeGame") {
     it("Принимает Input, Расставляет корабли возвращает Game") {
-       makeGame(TEST_INPUT_1.split("\\n").toList) should
-         equal (EXPECTED_GAME_1)
+       assert(makeGame(TEST_INPUT_1.split("\\n").toList) ==
+         Some(EXPECTED_GAME_1))
     }
   }
 

@@ -197,9 +197,25 @@ object Battleship {
     }
   }
 
-  def tryAddShip(game: Game, name: String, ship: Ship): Game = ???
+  def tryAddShip(game: Game, name: String, ship: Ship): Game = {
+    game match {
+      case (field, fleet) =>
+        if (validateShip(ship) && validatePosition(ship, field))
+          (markUsedCells(field, ship), enrichFleet(fleet, name, ship))
+        else game
+    }
+  }
 
-  def makeGame(input: Input): Game = {
-    ???
+  def newGame: Game = {
+    val field: Field = Vector.fill(FIELD_SIZE)(Vector.fill(FIELD_SIZE)(false))
+    val fleet: Fleet = Map().empty
+    (field, fleet)
+  }
+
+  def makeGame(in: Input): Option[Game] = {
+    for {
+      fleet <- readInput(in)
+      val res = fleet.foldLeft(newGame)((g, sh) => tryAddShip(g, sh._1, sh._2))
+    } yield (res)
   }
 }
