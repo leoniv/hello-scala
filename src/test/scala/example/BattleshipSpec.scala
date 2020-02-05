@@ -192,25 +192,35 @@ class BattleshipSpec extends FunSpec with Matchers with DiagrammedAssertions {
   }
 
   describe("#validatePosition") {
-    val field = Vector(
-      Vector(F, F, F),
-      Vector(F, F, F),
-      Vector(t, F, F),
-    )
     describe("Корабли не могут касаться дугруга") {
+      val field = Vector(
+        Vector(F, F, F),
+        Vector(F, t, F),
+        Vector(F, F, F),
+      )
       it ("Ни бортами") {
+        assert(validatePosition(ship(0 -> 1), field) == false)
         assert(validatePosition(ship(1 -> 0), field) == false)
         assert(validatePosition(ship(2 -> 1), field) == false)
+        assert(validatePosition(ship(1 -> 2), field) == false)
       }
       it ("Ни углами") {
-        assert(validatePosition(ship(1 -> 1), field) == false)
+        assert(validatePosition(ship(0 -> 0), field) == false)
+        assert(validatePosition(ship(0 -> 2), field) == false)
+        assert(validatePosition(ship(2 -> 0), field) == false)
+        assert(validatePosition(ship(2 -> 2), field) == false)
       }
       it ("Тем более пересекаться") {
-        assert(validatePosition(ship(1 -> 0), field) == false)
+        assert(validatePosition(ship(1 -> 0, 1 -> 1, 1 -> 2), field) == false)
       }
     }
 
     it("Валидная позиция корабля") {
+      val field = Vector(
+        Vector(F, F, F),
+        Vector(F, F, F),
+        Vector(t, F, F),
+      )
       assert(validatePosition(ship(0 -> 0), field) == true)
       assert(validatePosition(ship(0 -> 1), field) == true)
       assert(validatePosition(ship(0 -> 2), field) == true)

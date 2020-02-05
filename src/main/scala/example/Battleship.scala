@@ -32,17 +32,17 @@ object Battleship {
         xs.distinct.size == 1
       }
       if (projection.isEmpty) false
-      else isConst(projection) || isMonotonic(projection.sorted)
+      else isConst(projection) || isMonotonic(projection)
     }
 
     def validate: Boolean =
       validateProjection(xProjection) &&
       validateProjection(yProjection) &&
       SHIP_MAX_LENGTH + 1 >= xWidth + yWidth &&
-      xProjection.sorted.last < FIELD_SIZE &&
-      yProjection.sorted.last < FIELD_SIZE &&
-      xProjection.sorted.head > -1 &&
-      yProjection.sorted.head > -1
+      xProjection.last < FIELD_SIZE &&
+      yProjection.last < FIELD_SIZE &&
+      xProjection.head > -1 &&
+      yProjection.head > -1
   }
   object ShipLine {
     class ShipWrapper(val get: Ship) extends ShipLine
@@ -159,10 +159,22 @@ object Battleship {
   }
 
   def validatePosition(ship: Ship, field: Field): Boolean = {
-    sequence(ship.map(point => getCell(field, point))) match {
+    !ship.flatMap(p => p match {
+        case (x, y) => (x, y) +: List(
+          (x - 1, y    ),
+          (x    , y - 1),
+          (x + 1, y    ),
+          (x    , y + 1),
+          (x - 1, y - 1),
+          (x - 1, y + 1),
+          (x + 1, y - 1),
+          (x + 1, y + 1)
+        )
+      }
+    ).map(point => getCell(field, point)).map{
       case None => false
-      case Some(cels) => !cels.foldLeft(false)((acc, x) => acc || x)
-    }
+      case Some(cell) => cell
+    }.foldLeft(false)((acc, x) => acc || x)
   }
 
   def enrichFleet(fleet: Fleet, name: String, ship: Ship): Fleet = {
